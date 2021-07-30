@@ -212,3 +212,103 @@ int binary_search(int *array, int left, int right, int number){
 }
 ```
 code:https://github.com/coherent17/search-algorithm/blob/main/search/exponential_search.c
+
+### **插補搜尋(Interpolation search)**
+#### 一樣是二分搜尋法的變形，不過尋找中間點的index改為使用數學中的內插法來進行。
+
+此被搜尋的數列必須為"已排序的數列"，取最小及最大的兩點算出斜率，而後透過數學上的內插法去計算該被搜尋數的可能位置在哪裡，而後以那點為中點，最小及最大為範圍，進行比較，若該數大於剛剛算出的中點，則將剛剛的中點改為下界，再次使用內插法算出該數可能的位置。反之亦然。
+
+#### 內插法:
+設$(left,data[left])$,$(right,data[right])$為上限及下限的索引及所對應的數值。  
+
+兩點間的斜率為:  
+*    $\frac{data[right]-data[left]}{right-left}$
+                                        
+使用點斜式造出通過此二點的線:  
+
+*    $y-data[left]=\frac{data[right]-data[left]}{right-left}(x-left)$  
+
+設被搜尋數為$number$，而透過內插法求出他可能的索引值為$index$  
+將$(index,number)$代入上式整理後可以得到我們預期被搜索數出現的$index$為:  
+*    $index=left+\frac{number-data[left]}{data[right]-data[left]}(right-left)$  
+
+而後我們去比較$data[index]$與$number$的關係:
+*    **Three cases**:  
+        *    Case 1:$number = data[index]$ 
+        *    Case 2:$number > data[index]$ 
+        *    Case 3:$number < data[index]$  
+
+若為Case 1，那就成功找到該數了，若為Case 2，則將剛剛的$left$改為$index+1$，而後繼續使用內插法算出新的$index$直到找到數字為止。若為Case 3，則將剛剛的$right$改為$index-1$，而後繼續使用內插法算出新的$index$直到找到數字為止。
+
+#### 舉例說明:
+
+假設要找的數字為$84$
+| 0   |  1  | 2   | 3   | 4   | 5   | 6   | 7   |
+| --- |:---:| --- | --- | --- | --- | --- | --- |
+| 13  | 21  | 34  | 55  | 69  | 73  | 84  | 101 | 
+
+透過內插法，可以得知$index:$  
+$index=0+\frac{84-13}{101-13}(7-0)=5.6 \sim 5$  
+
+| 0   |  1  | 2   | 3   | 4   | 5                 | 6   |  7  |
+| --- |:---:| --- | --- | --- | ----------------- | --- |:---:|
+| 13  | 21  | 34  | 55  | 69  | $\color{red}{73}$ | 84  | 101 |
+
+由於$73$小於被搜索的數，因此將對後面的資料進行同樣的搜索，即將$left$改為剛剛算出來的$5+1$。
+因此新的$index:$  
+$index=6+\frac{84-84}{101-73}(7-5)=6$
+
+| 0   |  1  | 2   | 3   | 4   | 5   | 6                 |  7  |
+| --- |:---:| --- | --- | --- | --- | ----------------- |:---:|
+| 13  | 21  | 34  | 55  | 69  | 73  | $\color{red}{84}$ | 101 |
+
+成功找到該被搜尋數了!  
+
+#### 時間複雜度:
+Note:假設有陣列中有$n$個元素
+*    Best Case:$O(1)$，透過內插法直接找到正確的索引值(資料為線性分布)
+*    Worst Case:$O(n)$，近似線的公式與實際上誤差很大，每次都剛好只有排除一個元素
+
+#### C code:
+```c=
+#include <stdio.h>
+#define SIZE 8
+
+int interpolation_search(int *, int);
+
+int main(){
+    int array[SIZE]={13,21,34,55,69,73,84,101};
+    int index=interpolation_search(array,84);
+    printf("%d\n",index);
+    return 0;
+}
+
+int interpolation_search(int *array, int number){
+    int left=0;
+    int right=SIZE-1;
+
+    while(number >= array[left] &&  number <= array[right] && left <= right){
+        int index;
+        //interpolation to find the index
+        index=left+(number-array[left])/(array[right]-array[left])*(right-left);
+
+        //when left meet right
+        if(left==right){
+            if(array[left]==number) return left;
+            else return -1;
+        }
+
+        //if the number appear at the index
+        if(number==array[index]) return index;
+
+        //if the number is greater than array[index]
+        else if(number > array[index]) left=index+1;
+
+        //if the number is smaller than array[index]
+        else right=index-1;
+    }
+    //the element isn't in the array
+    return -1;
+}
+```
+code:https://github.com/coherent17/search-algorithm/blob/main/search/interpolation_search.c
