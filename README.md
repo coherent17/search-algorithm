@@ -58,7 +58,17 @@ Note:假設有陣列中有$n$個元素
 *    Worst Case:$O(log(n))$，最慘需要折半對比$log_2(n)$次。
 
 #### C code:
-有兩種版本，一種是用迴圈的，另一種則是用遞迴。
+有兩種版本，一種是用迴圈的，另一種則是用遞迴。  
+在這邊有一個特別需要注意到的事情為中點的計算方式:
+```c=
+int mid=(left+right)/2;
+```
+若是使用這種計算方法，當$left$及$right$的總和超過$int$的範圍，那麼這邊將會出現不可預期的錯誤。
+當($left+right>2^{31}-1$)將會溢位。那要如何改善呢?
+```c=
+int mid=left+(right-left)/2;
+```
+透過上面終點位置取法的改變，因為$right \geq left$，因此$right-left$就不會出現overflow的情形了!
 ##### 迴圈版(iterative binary search):
 ```c=
 #include <stdio.h>
